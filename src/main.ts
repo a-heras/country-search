@@ -22,11 +22,7 @@ function mount(): void {
 
   const controller = createCountrySearchController();
   let lastQuery = '';
-
-  function showDetail(country: Country): void {
-    clear(results);
-    results.appendChild(renderDetail(country, () => input.focus()));
-  }
+  let lastResults: Country[] = [];
 
   function renderResults(list: Country[]): void {
     clear(results);
@@ -43,11 +39,22 @@ function mount(): void {
     results.appendChild(ul);
   }
 
+  function showDetail(country: Country): void {
+    clear(results);
+    results.appendChild(
+      renderDetail(country, () => {
+        renderResults(lastResults);
+        input.focus();
+      }),
+    );
+  }
+
   async function runSearch(query: string): Promise<void> {
     lastQuery = query;
 
     if (query.trim() === '') {
       controller.cancel();
+      lastResults = [];
       clear(results);
       return;
     }
@@ -58,6 +65,7 @@ function mount(): void {
     try {
       const data = await controller.search(query);
       if (data === null) return;
+      lastResults = data;
       renderResults(data);
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') return;
