@@ -17,8 +17,6 @@ export function createCountrySearchController(): CountrySearchController {
   }
 
   async function search(query: string): Promise<Country[] | null> {
-    // 1. Отменяем предыдущий активный запрос ДО создания нового,
-    //    чтобы устаревший ответ не прилетел и не перезаписал актуальный.
     cancel();
 
     const controller = new AbortController();
@@ -26,25 +24,12 @@ export function createCountrySearchController(): CountrySearchController {
 
     try {
       const result = await searchCountries(query, controller.signal);
-
-      // 2. Защита от «фальшивого» завершения: если к моменту ответа
-      //    этот controller уже не текущий — значит, его отменили или
-      //    перекрыли новым запросом. Возвращаем null.
-      if (current !== controller) {
-        return null;
-      }
-
+      if (current !== controller) return null;
       return result;
     } catch (err) {
-      // 3. Отмена — не ошибка. Возвращаем null.
-      if (isAbortError(err)) {
-        return null;
-      }
-      // 4. Настоящая ошибка — пробрасываем наверх (UI покажет «Повторить»).
+      if (isAbortError(err)) return null;
       throw err;
     } finally {
-      // 5. Если это всё ещё наш controller — сбрасываем ссылку,
-      //    чтобы следующие вызовы не отменяли уже завершённый запрос.
       if (current === controller) {
         current = null;
       }

@@ -15,6 +15,5 @@ export function renderError(onRetry: () => void): HTMLElement {
   const text = el('span', { textContent: 'Не удалось загрузить данные. Проверьте соединение.' });
   const btn = el('button', { type: 'button', textContent: 'Повторить' });
   btn.addEventListener('click', onRetry);
-
   return el('div', { className: 'state error' }, [text, btn]);
 }
