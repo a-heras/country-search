@@ -14,7 +14,6 @@ const rawSpain: RawCountry = {
   demonym: 'Spanish',
   languages: [{ name: 'Spanish', iso639_1: 'es', iso639_2: 'spa', nativeName: 'Español' }],
   subregion: 'Southern Europe',
-  alpha2Code: 'ES',
   currencies: [{ code: 'EUR', name: 'Euro', symbol: '€' }],
   nativeName: 'España',
   population: 47351567,
