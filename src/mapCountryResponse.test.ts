@@ -86,4 +86,21 @@ describe('mapCountryResponse', () => {
     };
     expect(mapCountryResponse(raw).currencies).toEqual(['Test']);
   });
+
+  it('не падает, если у страны нет languages или currencies (например, Antarctica)', () => {
+    const raw: RawCountry = {
+      name: 'Antarctica',
+      flag: '🇦🇶',
+      flags: { svg: 'x.svg' },
+      area: 14000000,
+      region: 'Antarctic',
+    };
+    const result = mapCountryResponse(raw);
+
+    expect(result.languages).toEqual([]);
+    expect(result.currencies).toEqual([]);
+    expect(result.capital).toBe('');
+    expect(result.population).toBe(0);
+    expect(result.flagUrl).toBe('x.svg');
+  });
 });
