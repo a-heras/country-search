@@ -30,7 +30,7 @@ function makeFetchMock(payload: unknown, init: { status?: number } = {}): typeof
   }) as unknown as typeof fetch;
 }
 
-describe('searchCountries', () => {
+describe('searchCountries — базовая логика', () => {
   const originalFetch = globalThis.fetch;
 
   beforeEach(() => {
@@ -52,7 +52,7 @@ describe('searchCountries', () => {
     const [url, init] = (fetchMock as unknown as ReturnType<typeof vi.fn>).mock.calls[0];
     expect(url).toBe('https://countries.dev/name/Spain');
     expect(init.method).toBe('GET');
-    expect(init.signal).toBe(controller.signal);
+    expect(init.signal).toBeDefined();
   });
 
   it('возвращает массив Country, замапленный через mapCountryResponse', async () => {
@@ -106,5 +106,54 @@ describe('searchCountries', () => {
     await expect(searchCountries('Spain', controller.signal)).rejects.toMatchObject({
       name: 'AbortError',
     });
+  });
+});
+
+describe('searchCountries — таймаут и отмена', () => {
+  const originalFetch = globalThis.fetch;
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  it('по истечении таймаута fetch отклоняется с TimeoutError, не AbortError', async () => {
+    globalThis.fetch = vi.fn().mockImplementation((_url: string, init: RequestInit) => {
+      return new Promise((_resolve, reject) => {
+        init.signal?.addEventListener('abort', () => {
+          reject(init.signal?.reason);
+        });
+      });
+    }) as unknown as typeof fetch;
+
+    const controller = new AbortController();
+    await expect(searchCountries('Spain', controller.signal, 50)).rejects.toMatchObject({
+      name: 'TimeoutError',
+    });
+  });
+
+  it('при отмене пользователем fetch отклоняется с AbortError, не TimeoutError', async () => {
+    globalThis.fetch = vi.fn().mockImplementation((_url: string, init: RequestInit) => {
+      return new Promise((_resolve, reject) => {
+        init.signal?.addEventListener('abort', () => {
+          reject(init.signal?.reason);
+        });
+      });
+    }) as unknown as typeof fetch;
+
+    const controller = new AbortController();
+    const promise = searchCountries('Spain', controller.signal, 10_000);
+    controller.abort();
+
+    await expect(promise).rejects.toMatchObject({ name: 'AbortError' });
+  });
+
+  it('таймаут не срабатывает, если ответ пришёл раньше', async () => {
+    globalThis.fetch = makeFetchMock([rawSpain]);
+
+    const controller = new AbortController();
+    const result = await searchCountries('Spain', controller.signal, 1000);
+
+    expect(result).toHaveLength(1);
+    expect(result[0].name).toBe('Spain');
   });
 });
