@@ -6,18 +6,20 @@ function formatCurrency(name: string, symbol?: string): string {
 
 export function mapCountryResponse(raw: RawCountry): Country {
   return {
-    name: raw.name,
-    flag: raw.flag,
-    flagUrl: raw.flags.svg,
-    capital: raw.capital,
-    region: raw.region,
+    name: raw.name ?? '',
+    flag: raw.flag ?? '',
+    flagUrl: raw.flags?.svg ?? '',
+    capital: raw.capital ?? '',
+    region: raw.region ?? '',
     subregion: raw.subregion ?? '',
-    population: raw.population,
-    languages: raw.languages.map((l) => l.name),
-    area: raw.area,
+    population: raw.population ?? 0,
+    languages: (raw.languages ?? []).map((l) => l?.name ?? '').filter(Boolean),
+    area: raw.area ?? 0,
     borders: raw.borders ?? [],
-    currencies: raw.currencies.map((c) => formatCurrency(c.name, c.symbol)),
-    nativeName: raw.nativeName,
+    currencies: (raw.currencies ?? [])
+      .map((c) => formatCurrency(c?.name ?? '', c?.symbol))
+      .filter(Boolean),
+    nativeName: raw.nativeName ?? '',
     demonym: raw.demonym ?? '',
     timezones: raw.timezones ?? [],
   };

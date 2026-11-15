@@ -13,17 +13,17 @@ export interface RawCurrency {
 
 export interface RawCountry {
   name: string;
-  flag: string;
-  flags: { png: string; svg: string };
-  capital: string;
-  region: string;
+  flag?: string;
+  flags?: { png?: string; svg?: string };
+  capital?: string;
+  region?: string;
   subregion?: string;
-  population: number;
-  languages: RawLanguage[];
-  area: number;
+  population?: number;
+  languages?: RawLanguage[];
+  area?: number;
   borders?: string[];
-  currencies: RawCurrency[];
-  nativeName: string;
+  currencies?: RawCurrency[];
+  nativeName?: string;
   demonym?: string;
   timezones?: string[];
 }
